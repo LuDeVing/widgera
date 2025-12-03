@@ -14,7 +14,7 @@ Structured output from LLMs. Define fields, get JSON back.
 ```bash
 cp .env.example .env
 # fill in your keys
-docker compose up --build
+docker compose up --build -d
 ```
 
 Open `http://localhost`
@@ -22,19 +22,32 @@ Open `http://localhost`
 ## Environment
 
 ```env
-# Required
-GEMINI_API_KEY=your-key
-AWS_S3_BUCKET=your-bucket
-AWS_ACCESS_KEY=xxx
-AWS_SECRET_KEY=xxx
-JWT_SECRET=at-least-32-chars
-
-# Optional (defaults work)
-AWS_REGION=us-east-1
+# Database
+DB_HOST=postgres
+DB_PORT=5432
 DB_NAME=widgera
 DB_USERNAME=postgres
 DB_PASSWORD=postgres
+
+# Redis
+REDIS_HOST=redis
+REDIS_PORT=6379
+
+# Server
 SERVER_PORT=8080
+
+# JWT
+JWT_SECRET=secret-jwt-key
+JWT_EXPIRATION=86400000
+
+# Google Gemini API
+GEMINI_API_KEY=gemini-api-key
+
+# AWS S3
+AWS_S3_BUCKET=bucket-name
+AWS_REGION=us-east-1
+AWS_ACCESS_KEY=aws-access-key
+AWS_SECRET_KEY=aws-secret-key
 ```
 
 ## API
