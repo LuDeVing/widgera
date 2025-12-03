@@ -5,6 +5,7 @@ import com.widgera.dto.PromptRequest;
 import com.widgera.dto.PromptResponse;
 import com.widgera.entity.User;
 import com.widgera.service.PromptService;
+import com.widgera.service.S3Service;
 import com.widgera.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +24,7 @@ import java.util.List;
 public class PromptController {
 
     private final PromptService promptService;
+    private final S3Service s3Service;
     private final UserService userService;
 
     @PostMapping
@@ -37,24 +39,20 @@ public class PromptController {
     }
 
     @GetMapping("/history")
-    public ResponseEntity<List<HistoryResponse>> getHistory(
-            @AuthenticationPrincipal UserDetails userDetails,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
-    ) {
-        log.info("History request from user: {}", userDetails.getUsername());
-        User user = userService.getUserByUsername(userDetails.getUsername());
-        List<HistoryResponse> history = promptService.getHistory(user, page, size);
-        return ResponseEntity.ok(history);
-    }
-
-    @GetMapping("/history/all")
     public ResponseEntity<List<HistoryResponse>> getAllHistory(
             @AuthenticationPrincipal UserDetails userDetails
     ) {
         log.info("Full history request from user: {}", userDetails.getUsername());
         User user = userService.getUserByUsername(userDetails.getUsername());
         List<HistoryResponse> history = promptService.getAllHistory(user);
+
+        // Generate fresh presigned URLs (not cached, always 1hr expiry)
+        history.forEach(h -> {
+            if (h.getImageUrl() != null) {
+                h.setImageUrl(s3Service.generatePresignedUrlFromS3Url(h.getImageUrl()));
+            }
+        });
+
         return ResponseEntity.ok(history);
     }
 }

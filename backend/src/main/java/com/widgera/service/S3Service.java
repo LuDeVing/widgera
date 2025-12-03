@@ -132,7 +132,7 @@ public class S3Service {
      * Generate a presigned URL for secure, time-limited access to an image.
      * The URL expires after the specified duration.
      */
-    public String generatePresignedUrl(String s3Key, Duration expiration) {
+    private String generatePresignedUrl(String s3Key, Duration expiration) {
         GetObjectRequest getObjectRequest = GetObjectRequest.builder()
                 .bucket(bucketName)
                 .key(s3Key)

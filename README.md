@@ -65,7 +65,7 @@ POST /api/prompt
   "imageId": 1  // optional
 }
 
-GET /api/prompt/history/all
+GET /api/prompt/history
 ```
 
 ## Architecture decisions
@@ -74,7 +74,7 @@ GET /api/prompt/history/all
 
 **Why presigned URLs?** S3 bucket is private. Backend generates time-limited URLs so images work in browser without exposing credentials.
 
-**Why Redis cache on history?** Presigned URLs are generated per request. Caching the response (30 min TTL, shorter than 1 hour URL expiry) reduces DB hits and S3 presigner calls.
+**Why Redis cache on history?** History data (prompts, fields, outputs, raw S3 URLs) is cached in Redis with no TTL - only evicted when new history is added. Presigned URLs are generated fresh on each request at the controller layer.
 
 **Why hash images?** SHA-256 of file content. Same image = same hash = no duplicate upload for that user.
 

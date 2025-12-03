@@ -52,9 +52,7 @@ export const imageApi = {
 // Prompt endpoints
 export const promptApi = {
   submit: (data) => api.post('/prompt', data),
-  getHistory: (page = 0, size = 10) =>
-    api.get(`/prompt/history?page=${page}&size=${size}`),
-  getAllHistory: () => api.get('/prompt/history/all'),
+  getHistory: () => api.get('/prompt/history'),
 };
 
 export default api;

@@ -17,7 +17,7 @@ const History = () => {
 
   const fetchHistory = async () => {
     try {
-      const response = await promptApi.getAllHistory();
+      const response = await promptApi.getHistory();
       setHistory(response.data);
     } catch (err) {
       setError('Failed to load history');

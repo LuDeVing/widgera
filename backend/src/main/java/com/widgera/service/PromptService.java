@@ -14,8 +14,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,7 +33,7 @@ public class PromptService {
     private final ObjectMapper objectMapper;
 
     @Transactional
-    @CacheEvict(value = "history", key = "#user.id + '_all'")
+    @CacheEvict(value = "history", key = "#user.id")
     public PromptResponse processPrompt(PromptRequest request, User user) {
         log.info("Processing prompt for user: {}", user.getUsername());
 
@@ -87,19 +85,7 @@ public class PromptService {
         }
     }
 
-    @Cacheable(value = "history", key = "#user.id + '_' + #page + '_' + #size")
-    public List<HistoryResponse> getHistory(User user, int page, int size) {
-        log.info("Cache MISS - Fetching history from DB for user: {} (page: {}, size: {})", user.getUsername(), page, size);
-
-        Page<PromptHistory> historyPage = promptHistoryRepository.findByUserOrderByCreatedAtDesc(
-                user, PageRequest.of(page, size));
-
-        return historyPage.getContent().stream()
-                .map(this::mapToHistoryResponse)
-                .collect(Collectors.toList());
-    }
-
-    @Cacheable(value = "history", key = "#user.id + '_all'")
+    @Cacheable(value = "history", key = "#user.id")
     public List<HistoryResponse> getAllHistory(User user) {
         log.info("Cache MISS - Fetching all history from DB for user: {}", user.getUsername());
 
@@ -124,16 +110,10 @@ public class PromptService {
                     }
             );
 
-            // Generate presigned URL for secure access
-            String imageUrl = history.getImageUrl();
-            if (imageUrl != null && !imageUrl.isEmpty()) {
-                imageUrl = s3Service.generatePresignedUrlFromS3Url(imageUrl);
-            }
-
             return HistoryResponse.builder()
                     .id(history.getId())
                     .prompt(history.getPrompt())
-                    .imageUrl(imageUrl)
+                    .imageUrl(history.getImageUrl())
                     .fields(fields)
                     .output(output)
                     .createdAt(history.getCreatedAt())
